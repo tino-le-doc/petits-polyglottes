@@ -41,7 +41,7 @@ document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
   show("screen-play");
   renderItem();
   // Le clic sur l'activité sert aussi d'autorisation pour le son : on démarre tout de suite.
-  if (isVoiceMode()) startCoach();
+  if (isVoiceMode()) startWithMic();
 });
 
 const isVoiceMode = () => S.mode === "speak" || S.mode === "talk";
@@ -316,7 +316,43 @@ function startCoach() {
   const id = runId;
   (S.mode === "talk" ? talkLoop(id) : repeatLoop(id)).catch(e => console.error(e));
 }
-$("btn-coach").onclick = () => coachRunning ? stopCoach() : startCoach();
+$("btn-coach").onclick = () => coachRunning ? stopCoach() : startWithMic();
+
+// ===== Autorisation du micro =====
+// Sur Android, Chrome ne montre la demande d'autorisation que si elle part directement
+// d'un toucher de l'enfant. On la demande donc tout de suite, avant que le robot parle.
+let micOk = false;
+const isAndroid = /android/i.test(navigator.userAgent);
+
+function micHelp(kind) {
+  const android = `<ol style="text-align:left;margin:8px 0 0 0;padding-left:22px">
+      <li>Ouvre les <b>Paramètres</b> du téléphone → <b>Applications</b> → <b>Chrome</b> → <b>Autorisations</b> → <b>Micro</b> → <b>Autoriser</b>.</li>
+      <li>Fais pareil pour l'application <b>Google</b> (c'est elle qui comprend la voix).</li>
+      <li>Dans Chrome : menu ⋮ → <b>Paramètres</b> → <b>Paramètres des sites</b> → <b>Micro</b> : vérifie que <b>tino-le-doc.github.io</b> n'est pas bloqué.</li>
+      <li>Reviens ici et appuie sur <b>▶</b>.</li></ol>`;
+  const desktop = "Clique sur le cadenas à côté de l'adresse du site et autorise le micro, puis appuie sur ▶.";
+  if (kind === "service") {
+    return `🎤 Le micro marche, mais la reconnaissance de la voix est indisponible.<br>` +
+      (isAndroid ? "Vérifie que l'application <b>Google</b> est installée, à jour, et qu'elle a le droit d'utiliser le micro. Il faut aussi Internet." : "Utilise Google Chrome ou Microsoft Edge, avec Internet.");
+  }
+  if (kind === "none") return "🎤 Je ne trouve aucun micro sur cet appareil.";
+  return `🎤 Je n'ai pas le droit d'utiliser le micro.${isAndroid ? android : "<br>" + desktop}`;
+}
+
+async function startWithMic() {
+  if (!micOk && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(t => t.stop());   // on libère le micro pour la reconnaissance vocale
+      micOk = true;
+    } catch (e) {
+      stopCoach();
+      feedback("bad", micHelp(e.name === "NotFoundError" ? "none" : "denied"));
+      return;
+    }
+  }
+  startCoach();
+}
 
 // Écoute l'enfant ; gère le silence et les erreurs de micro. Renvoie les alternatives ou null.
 async function hearKid(id) {
@@ -330,10 +366,8 @@ async function hearKid(id) {
     if (id !== runId) return null;
     setStatus("");
     if (r.alts) return r.alts;
-    if (r.error === "not-allowed" || r.error === "service-not-allowed") {
-      feedback("bad", "🎤 Il faut autoriser le micro : clique sur le cadenas à côté de l'adresse du site.");
-      stopCoach(); return null;
-    }
+    if (r.error === "not-allowed") { micOk = false; feedback("bad", micHelp("denied")); stopCoach(); return null; }
+    if (r.error === "service-not-allowed" || r.error === "language-not-supported") { feedback("bad", micHelp("service")); stopCoach(); return null; }
     if (r.error === "network") { feedback("bad", "🌐 Il faut être connecté à Internet pour que je t'écoute."); stopCoach(); return null; }
     if (r.error === "audio-capture") { feedback("bad", "🎤 Je ne trouve pas de micro. Est-il bien branché ?"); stopCoach(); return null; }
     if (r.error === "aborted") return null;

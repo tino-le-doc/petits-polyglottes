@@ -1,6 +1,6 @@
 // Service worker : garde l'application en mémoire sur le téléphone (ouverture rapide, même sans réseau).
 // Pensez à changer VERSION à chaque mise à jour des fichiers.
-const VERSION = "pp-v1";
+const VERSION = "pp-v2";
 const FILES = ["./", "index.html", "style.css", "data.js", "app.js", "manifest.json",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png"];
 
