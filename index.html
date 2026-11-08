@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6c5ce7">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Petits Polyglottes</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🌍 Petits Polyglottes</h1>
+    <div class="stars" title="Tes étoiles">⭐ <span id="stars">0</span></div>
+  </header>
+
+  <!-- Écran 1 : choix de la langue -->
+  <section id="screen-lang" class="screen active">
+    <h2>Quelle langue veux-tu apprendre ?</h2>
+    <div class="big-choices">
+      <button class="big-btn" data-lang="en"><span>🇬🇧</span>Anglais</button>
+      <button class="big-btn" data-lang="es"><span>🇪🇸</span>Espagnol</button>
+    </div>
+  </section>
+
+  <!-- Écran 2 : choix du thème -->
+  <section id="screen-theme" class="screen">
+    <button class="back" data-go="screen-lang">⬅ Retour</button>
+    <h2 id="theme-title">Choisis un thème</h2>
+    <div id="themes" class="grid"></div>
+  </section>
+
+  <!-- Écran 3 : choix de l'activité -->
+  <section id="screen-mode" class="screen">
+    <button class="back" data-go="screen-theme">⬅ Retour</button>
+    <h2 id="mode-title">Que veux-tu faire ?</h2>
+    <div class="big-choices">
+      <button class="big-btn mode" data-mode="listen"><span>👂</span>Écouter<small>Découvre les mots</small></button>
+      <button class="big-btn mode" data-mode="speak"><span>🗣️</span>Répète après moi<small>Je t'écoute et je t'aide à bien prononcer</small></button>
+      <button class="big-btn mode" data-mode="talk"><span>🤖</span>Discuter<small>On se parle à voix haute</small></button>
+      <button class="big-btn mode" data-mode="write"><span>✍️</span>Écrire<small>La dictée magique</small></button>
+    </div>
+  </section>
+
+  <!-- Écran 4 : exercice -->
+  <section id="screen-play" class="screen">
+    <button class="back" data-go="screen-mode">⬅ Retour</button>
+    <div class="progress"><div id="progress-bar"></div></div>
+    <div class="card">
+      <div id="emoji" class="emoji">🐶</div>
+      <div id="word" class="word">dog</div>
+      <div id="fr" class="fr">chien</div>
+      <div id="hint" class="hint"></div>
+
+      <div class="actions">
+        <button id="btn-play" class="round" title="Écouter">🔊</button>
+        <button id="btn-slow" class="round" title="Écouter lentement">🐢</button>
+      </div>
+
+      <div id="voice-zone" class="voice-zone">
+        <button id="btn-coach" class="coach">▶ On commence !</button>
+        <div id="status" class="status"></div>
+        <div id="chat" class="chat"></div>
+      </div>
+
+      <div id="write-zone" class="write-zone">
+        <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Écris le mot ici…">
+        <div id="accents" class="accents"></div>
+        <button id="btn-check" class="primary">Vérifier ✅</button>
+      </div>
+
+      <div id="feedback" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button id="btn-prev" class="secondary">⬅ Précédent</button>
+      <button id="btn-next" class="primary">Suivant ➡</button>
+    </div>
+  </section>
+
+  <div id="confetti"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  </script>
+</body>
+</html>
