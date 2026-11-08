@@ -1,1 +1,4 @@
 .claude/
+android/app/build/
+android/.gradle/
+*.keystore
